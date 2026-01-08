@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Atendimento WhatsApp</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Banner de desconexão -->
+        <div id="connection-banner" class="connection-banner" style="display: none;">
+            <span>⚠️ WhatsApp desconectado</span>
+            <button onclick="reconnectWhatsApp()">Reconectar 🔄</button>
+        </div>
+        <!-- Barra lateral com lista de conversas -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>Conversas</h1>
+                <button class="btn-refresh" onclick="carregarConversas()" title="Atualizar">
+                    <i data-lucide="refresh-cw"></i>
+                </button>
+            </div>
+
+            <div class="conversas-lista" id="conversas-lista">
+                <div class="loading">Carregando conversas...</div>
+            </div>
+        </aside>
+
+        <!-- Área principal do chat -->
+        <main class="chat-area">
+            <div class="chat-vazio" id="chat-vazio">
+                <div class="chat-vazio-content">
+                    <h2>📱 Sistema de Atendimento WhatsApp</h2>
+                    <p>Selecione uma conversa para começar</p>
+                </div>
+            </div>
+
+            <div class="chat-ativo" id="chat-ativo" style="display: none;">
+                <!-- Cabeçalho do chat -->
+                <div class="chat-header">
+                    <div class="chat-info">
+                        <h2 id="chat-numero">Cliente</h2>
+                        <span class="chat-status" id="chat-status">Aguardando</span>
+                        <p class="chat-attendant" id="chat-attendant" style="display: none;"></p>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="btn-fixar" onclick="alternarFixar()" title="Fixar no topo">
+                            <i data-lucide="pin"></i>
+                        </button>
+                        <button class="btn-limpar" onclick="limparConversa()" title="Limpar mensagens">
+                            <i data-lucide="eraser"></i>
+                        </button>
+                        <button class="btn-excluir" onclick="deletarConversa()" title="Excluir conversa">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                        <select class="status-select" id="status-select" onchange="atualizarStatus()">
+                            <option value="aguardando">Aguardando</option>
+                            <option value="em_atendimento">Em Atendimento</option>
+                            <option value="finalizado">Finalizado</option>
+                        </select>
+                        <button class="btn-logout" onclick="logout()" title="Sair">
+                            <i data-lucide="log-out"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Área de mensagens -->
+                <div class="mensagens-container" id="mensagens-container">
+                    <div class="loading">Carregando mensagens...</div>
+                </div>
+
+                <!-- Formulário de envio -->
+                <div class="chat-footer">
+                    <div class="chat-footer-top">
+                        <select class="atendente-select" id="atendente-select">
+                            <option value="">Selecione o atendente</option>
+                        </select>
+                        <button class="btn-nova" onclick="novaConversa()">
+                            <i data-lucide="plus"></i> Nova Conversa
+                        </button>
+                    </div>
+                    <div class="chat-footer-main">
+                        <div class="input-options">
+                            <label class="note-label">
+                                <input type="checkbox" id="nota-interna-check"> Nota Interna 📝
+                            </label>
+                        </div>
+                        <input type="file" id="arquivo-input" style="display: none;" onchange="enviarArquivo()">
+                        <button class="btn-anexo" title="Enviar arquivo"
+                            onclick="document.getElementById('arquivo-input').click()">
+                            <i data-lucide="paperclip"></i>
+                        </button>
+                        <input type="text" id="mensagem-input" placeholder="Digite sua mensagem..."
+                            onkeypress="handleKeyPress(event)">
+                        <button class="btn-enviar" onclick="enviarMensagem()">
+                            <span>Enviar</span>
+                            <i data-lucide="send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script para ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Inicializa os ícones após o carregamento
+        lucide.createIcons();
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>

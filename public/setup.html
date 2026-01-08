@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração WhatsApp - Sistema de Atendimento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0084ff 0%, #0073e6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.waiting {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .qr-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #qr-code {
+            max-width: 100%;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #0084ff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .instructions h3 {
+            color: #0084ff;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .btn-continue {
+            background: #0084ff;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+            display: none;
+        }
+
+        .btn-continue:hover {
+            background: #0073e6;
+        }
+
+        .btn-continue.show {
+            display: inline-block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0084ff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="setup-container">
+        <div class="logo">📱</div>
+        <h1>Configuração WhatsApp</h1>
+        <p class="subtitle">Conecte seu WhatsApp ao sistema de atendimento</p>
+
+        <div id="status" class="status loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px;">Iniciando conexão...</p>
+        </div>
+
+        <div class="qr-container" id="qr-container">
+            <div class="spinner"></div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Como conectar:</h3>
+            <ol>
+                <li>Abra o <strong>WhatsApp</strong> no seu celular</li>
+                <li>Toque em <strong>Mais opções</strong> (⋮) ou <strong>Configurações</strong></li>
+                <li>Toque em <strong>Aparelhos conectados</strong></li>
+                <li>Toque em <strong>Conectar um aparelho</strong></li>
+                <li>Aponte a câmera para o <strong>QR Code acima</strong></li>
+            </ol>
+        </div>
+
+        <button id="btn-continue" class="btn-continue" onclick="window.location.href='/login.html'">
+            Continuar para o Login →
+        </button>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const qrContainer = document.getElementById('qr-container');
+        const btnContinue = document.getElementById('btn-continue');
+
+        let checkInterval;
+
+        // Verificar status da conexão
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/whatsapp/status');
+                const data = await response.json();
+
+                if (data.connected) {
+                    showConnected();
+                } else if (data.qr) {
+                    showQRCode(data.qr);
+                } else {
+                    showWaiting();
+                }
+            } catch (error) {
+                showError('Erro ao verificar status. Tentando novamente...');
+            }
+        }
+
+        function showQRCode(qrData) {
+            statusEl.className = 'status waiting';
+            statusEl.innerHTML = '🔐 Escaneie o QR Code com seu WhatsApp';
+
+            qrContainer.innerHTML = `<img id="qr-code" src="${qrData}" alt="QR Code">`;
+        }
+
+        function showWaiting() {
+            statusEl.className = 'status loading';
+            statusEl.innerHTML = '<div class="spinner"></div><p style="margin-top: 15px;">Aguardando QR Code...</p>';
+
+            qrContainer.innerHTML = '<div class="spinner"></div>';
+        }
+
+        function showConnected() {
+            statusEl.className = 'status connected';
+            statusEl.innerHTML = '✅ WhatsApp conectado com sucesso!';
+
+            qrContainer.innerHTML = '<div style="font-size: 80px;">✅</div>';
+
+            btnContinue.classList.add('show');
+
+            clearInterval(checkInterval);
+        }
+
+        function showError(message) {
+            statusEl.className = 'status error';
+            statusEl.innerHTML = `❌ ${message}`;
+        }
+
+        // Verificar status a cada 2 segundos
+        checkStatus();
+        checkInterval = setInterval(checkStatus, 2000);
+    </script>
+</body>
+
+</html>

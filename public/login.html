@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema WhatsApp</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f2f5;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .login-card h2 {
+            color: #0084ff;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #0084ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .login-footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .login-footer a {
+            color: #0084ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="login-logo">💬</div>
+        <h2>Acesso ao Sistema</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="usuario">Usuário</label>
+                <input type="text" id="usuario" class="form-control" required placeholder="Seu usuário">
+            </div>
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" class="form-control" required placeholder="Sua senha">
+            </div>
+            <button type="submit" class="btn-login">Entrar</button>
+        </form>
+        <div class="login-footer">
+            Ainda não tem conta? <a href="cadastro.html">Cadastre-se</a>
+        </div>
+    </div>
+
+    <script>
+        // Verifica se o WhatsApp está conectado antes de permitir login
+        async function checkWhatsApp() {
+            try {
+                const response = await fetch('/api/whatsapp/status');
+                const data = await response.json();
+                if (!data.connected) {
+                    window.location.href = '/setup.html';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar WhatsApp');
+            }
+        }
+        checkWhatsApp();
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, senha })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    localStorage.setItem('usuario', JSON.stringify(result.data));
+                    window.location.href = '/chat';
+                } else {
+                    alert('Erro: ' + result.error);
+                }
+            } catch (error) {
+                alert('Erro de conexão ao servidor');
+            }
+        });
+    </script>
+</body>
+
+</html>

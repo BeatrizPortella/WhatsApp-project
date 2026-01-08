@@ -1,0 +1,20 @@
+senha: Beatrizservidor
+
+URL :  https://ihwjchqhpbxwmuzuxgeo.supabase.co
+
+PUBLISHABLE_KEY: sb_publishable_t2CkEDe4uOWU0sxhd-hm3g_Ut_XK4we
+
+
+
+melhorias:
+
+- opção de iniciar uma nova conversa
+- puxar o nome do cliente no whatsapp
+- enviar midias
+- enviar arquivos
+- apagar mensagem e limpar conversa
+- mudar os nomes dos atendentes para Chalison e Chaene
+- criar uma tela de login para os atendentes
+- criar uma tela de cadastro para os atendentes
+- criar uma tela de configuração para os atendentes
+- as conversas devem ser organizadas de acordo com o ultimo horário da mensagem enviada, então se alguém manda mensagem, ela sobe pro topo da lista

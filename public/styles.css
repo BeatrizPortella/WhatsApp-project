@@ -1,0 +1,749 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f0f2f5;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    max-width: 1600px;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+    width: 350px;
+    background: white;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 20px;
+    background: #0084ff;
+    /* Azul principal */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.btn-refresh {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-refresh:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(180deg);
+}
+
+.btn-refresh i {
+    width: 18px;
+    height: 18px;
+}
+
+.conversas-lista {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.conversa-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.conversa-item:hover {
+    background: #f5f5f5;
+}
+
+.conversa-item.ativa {
+    background: #e3f2fd;
+    /* Azul claro */
+}
+
+.conversa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.conversa-numero {
+    font-weight: 600;
+    font-size: 15px;
+    color: #111;
+}
+
+.conversa-nome-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon-pin-sidebar {
+    width: 12px;
+    height: 12px;
+    color: #ef6c00;
+    transform: rotate(45deg);
+}
+
+.conversa-hora {
+    font-size: 12px;
+    color: #667781;
+}
+
+.conversa-preview {
+    font-size: 14px;
+    color: #667781;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversa-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.conversa-atendente {
+    font-size: 12px;
+    color: #0084ff;
+    /* Azul */
+    font-weight: 500;
+}
+
+.badge-nao-lidas {
+    background: #0084ff;
+    /* Azul */
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.conversa-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.badge-status {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    width: fit-content;
+}
+
+.status-aguardando {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.status-em_atendimento {
+    background: #e3f2fd;
+    color: #0084ff;
+}
+
+.status-finalizado {
+    background: #f5f5f5;
+    color: #667781;
+}
+
+/* ========== CHAT AREA ========== */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #e5ddd5;
+    position: relative;
+    /* Para o botão de scroll */
+    overflow: hidden;
+}
+
+.chat-vazio {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+.chat-vazio-content {
+    text-align: center;
+    color: #667781;
+}
+
+.chat-vazio-content h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.icon-small {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
+.chat-ativo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Crucial para o scroll funcionar em flexbox */
+}
+
+.chat-header {
+    background: #0084ff;
+    /* Azul */
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.chat-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-info h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.chat-status {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.status-select {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.status-select option {
+    background: white;
+    color: #333;
+}
+
+/* ========== MENSAGENS ========== */
+.mensagens-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23e5ddd5" width="100" height="100"/></svg>');
+    min-height: 0;
+    /* Garante que o container não cresça além do pai */
+}
+
+.mensagem {
+    display: flex;
+    margin-bottom: 12px;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mensagem.cliente {
+    justify-content: flex-start;
+}
+
+.mensagem.atendente {
+    justify-content: flex-end;
+}
+
+.mensagem-conteudo {
+    max-width: 65%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    position: relative;
+    word-wrap: break-word;
+}
+
+.mensagem.cliente .mensagem-conteudo {
+    background: white;
+    border-radius: 0 8px 8px 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.mensagem.atendente .mensagem-conteudo {
+    background: #e3f2fd;
+    /* Azul claro */
+    border-radius: 8px 0 8px 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.mensagem-texto {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #111;
+}
+
+.mensagem-atendente-nome {
+    font-weight: 600;
+    color: #0084ff;
+    /* Azul */
+    margin-right: 5px;
+}
+
+.mensagem-hora {
+    font-size: 11px;
+    color: #667781;
+    margin-top: 5px;
+    text-align: right;
+}
+
+/* ========== FOOTER ========== */
+.chat-footer {
+    background: #f0f2f5;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.chat-footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-footer-main {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-nova {
+    padding: 8px 15px;
+    background: white;
+    color: #0084ff;
+    border: 1px solid #0084ff;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-nova:hover {
+    background: #0084ff;
+    color: white;
+}
+
+.btn-nova i {
+    width: 14px;
+    height: 14px;
+}
+
+.btn-anexo {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #667781;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-anexo:hover {
+    background: #e0e0e0;
+    color: #0084ff;
+}
+
+.btn-anexo i {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-limpar,
+.btn-excluir,
+.btn-fixar,
+.btn-logout {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    color: white;
+    opacity: 0.8;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-fixar.ativa {
+    opacity: 1;
+    color: #ffd700;
+    /* Dourado/Amarelo quando fixado */
+}
+
+.btn-limpar:hover,
+.btn-excluir:hover,
+.btn-fixar:hover,
+.btn-logout:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.btn-limpar i,
+.btn-excluir i,
+.btn-logout i {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-excluir:hover {
+    color: #ff4b4b;
+    /* Vermelho forte para indicar perigo */
+}
+
+.atendente-select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    min-width: 180px;
+    background: white;
+    cursor: pointer;
+}
+
+#mensagem-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#mensagem-input:focus {
+    border-color: #0084ff;
+    /* Azul */
+}
+
+.btn-enviar {
+    padding: 10px 24px;
+    background: #0084ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-enviar:hover {
+    background: #0073e6;
+    box-shadow: 0 2px 8px rgba(0, 132, 255, 0.3);
+}
+
+.btn-enviar i {
+    width: 18px;
+    height: 18px;
+}
+
+.btn-enviar:active {
+    transform: scale(0.98);
+}
+
+#btn-scroll-bottom {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0084ff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 1000;
+    font-size: 14px;
+    font-weight: 500;
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+#btn-scroll-bottom:hover {
+    background: #0073e6;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* ========== LOADING ========== */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #667781;
+    font-size: 14px;
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* ========== MÍDIAS ========== */
+.media-preview {
+    max-width: 300px;
+    max-height: 300px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    display: block;
+    transition: transform 0.2s;
+}
+
+.media-preview:hover {
+    transform: scale(1.02);
+}
+
+.media-video {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.media-audio {
+    width: 100%;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.media-link {
+    display: inline-block;
+    padding: 10px;
+    background: #f0f2f5;
+    border-radius: 5px;
+    color: #0084ff;
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.conversa-item.tem-nao-lidas {
+    border-left: 4px solid #0084ff;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        position: absolute;
+        z-index: 10;
+    }
+
+    .sidebar.hidden {
+        display: none;
+    }
+
+    .chat-footer {
+        flex-direction: column;
+    }
+
+    .atendente-select {
+        width: 100%;
+    }
+}
+
+/* ========== NOVAS FUNCIONALIDADES (Fase 2) ========== */
+
+/* Banner de Desconexão */
+.connection-banner {
+    background-color: #ff4b4b;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.connection-banner button {
+    background: white;
+    color: #ff4b4b;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Indicador de Atendente */
+.chat-attendant {
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+/* Toggle de Nota Interna */
+.input-options {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.note-label {
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    background: #fff3cd;
+    padding: 5px 10px;
+    border-radius: 15px;
+    border: 1px solid #ffeeba;
+    transition: all 0.2s;
+}
+
+.note-label:hover {
+    background: #ffeeba;
+}
+
+.note-label input {
+    cursor: pointer;
+}
+
+/* Mensagem do tipo Nota */
+.mensagem.nota {
+    justify-content: center;
+    opacity: 0.9;
+}
+
+.mensagem.nota .mensagem-conteudo {
+    background: #fff3cd;
+    /* Amarelo claro */
+    border: 1px solid #ffeeba;
+    border-radius: 8px;
+    color: #856404;
+    text-align: center;
+    max-width: 80%;
+    box-shadow: none;
+    font-style: italic;
+}
+
+.mensagem.nota .mensagem-atendente-nome {
+    color: #856404;
+    font-size: 11px;
+}
