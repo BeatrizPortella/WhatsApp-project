@@ -1,4 +1,10 @@
 require('dotenv').config();
+// Força resolução IPv4 para evitar erros de conexão com banco de dados em redes sem IPv6 configurado
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
