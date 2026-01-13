@@ -103,15 +103,21 @@ async function obterOuCriarConversa(numeroCliente, nomeCliente = null) {
  * @param {string} nomeCliente - Nome do cliente vindo do WhatsApp (opcional)
  * @param {string} whatsappId - ID único da mensagem no WhatsApp (opcional)
  */
-async function salvarMensagemCliente(numeroCliente, conteudo, mediaUrl = null, mediaType = null, nomeCliente = null, whatsappId = null) {
+/**
+ * Salva mensagem do cliente no banco
+ * @param {string} date - Data da mensagem (opcional)
+ */
+async function salvarMensagemCliente(numeroCliente, conteudo, mediaUrl = null, mediaType = null, nomeCliente = null, whatsappId = null, timestamp = null) {
     try {
         const conversaId = await obterOuCriarConversa(numeroCliente, nomeCliente);
 
+        const dataEnvio = timestamp ? new Date(timestamp * 1000) : 'NOW()';
+
         await pool.query(
             `INSERT INTO mensagens (conversa_id, remetente_tipo, conteudo, media_url, media_type, whatsapp_id, enviado_em)
-             VALUES ($1, $2, $3, $4, $5, $6, NOW())
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              ON CONFLICT (whatsapp_id) DO NOTHING`,
-            [conversaId, 'cliente', conteudo, mediaUrl, mediaType, whatsappId]
+            [conversaId, 'cliente', conteudo, mediaUrl, mediaType, whatsappId, dataEnvio]
         );
 
     } catch (error) {
@@ -122,30 +128,26 @@ async function salvarMensagemCliente(numeroCliente, conteudo, mediaUrl = null, m
 
 /**
  * Salva mensagem do atendente no banco
- * @param {string} numeroCliente - Número do cliente
- * @param {number} atendenteId - ID do atendente
- * @param {string} conteudo - Conteúdo da mensagem (sem prefixo do nome)
- * @param {string} mediaUrl - URL da mídia (opcional)
- * @param {string} mediaType - Tipo da mídia (opcional)
- * @param {string} whatsappId - ID único da mensagem no WhatsApp (opcional)
  */
-async function salvarMensagemAtendente(numeroCliente, atendenteId, conteudo, mediaUrl = null, mediaType = null, whatsappId = null) {
+async function salvarMensagemAtendente(numeroCliente, atendenteId, conteudo, mediaUrl = null, mediaType = null, whatsappId = null, timestamp = null) {
     try {
         const conversaId = await obterOuCriarConversa(numeroCliente);
 
-        // Atualiza conversa para associar ao atendente
+        // Atualiza conversa
         await pool.query(
             'UPDATE conversas SET atendente_id = $1, status = $2 WHERE id = $3',
             [atendenteId, 'em_atendimento', conversaId]
         );
 
-        // Salva mensagem
+        const dataEnvio = timestamp ? new Date(timestamp * 1000) : 'NOW()';
+
         await pool.query(
             `INSERT INTO mensagens (conversa_id, remetente_tipo, atendente_id, conteudo, media_url, media_type, whatsapp_id, enviado_em, tipo)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
              ON CONFLICT (whatsapp_id) DO NOTHING`,
-            [conversaId, 'atendente', atendenteId, conteudo, mediaUrl, mediaType, whatsappId, 'mensagem']
+            [conversaId, 'atendente', atendenteId, conteudo, mediaUrl, mediaType, whatsappId, dataEnvio, 'mensagem']
         );
+
 
     } catch (error) {
         console.error('❌ Erro ao salvar mensagem do atendente:', error);
@@ -161,15 +163,21 @@ async function salvarMensagemAtendente(numeroCliente, atendenteId, conteudo, med
  * @param {string} mediaType - Tipo da mídia
  * @param {string} whatsappId - ID da mensagem
  */
-async function salvarMensagemDoCelular(numeroCliente, conteudo, mediaUrl = null, mediaType = null, whatsappId = null) {
+/**
+ * Salva mensagem enviada pelo celular (sem atendente específico)
+ * @param {string} timestamp - Timestamp Unix (segundos) ou null
+ */
+async function salvarMensagemDoCelular(numeroCliente, conteudo, mediaUrl = null, mediaType = null, whatsappId = null, timestamp = null) {
     try {
         const conversaId = await obterOuCriarConversa(numeroCliente);
 
+        const dataEnvio = timestamp ? new Date(timestamp * 1000) : 'NOW()';
+
         await pool.query(
             `INSERT INTO mensagens (conversa_id, remetente_tipo, atendente_id, conteudo, media_url, media_type, whatsapp_id, enviado_em, tipo)
-             VALUES ($1, 'atendente', NULL, $2, $3, $4, $5, NOW(), 'mensagem')
+             VALUES ($1, 'atendente', NULL, $2, $3, $4, $5, $6, 'mensagem')
              ON CONFLICT (whatsapp_id) DO NOTHING`,
-            [conversaId, conteudo, mediaUrl, mediaType, whatsappId]
+            [conversaId, conteudo, mediaUrl, mediaType, whatsappId, dataEnvio]
         );
 
         // Opcional: Atualizar status para 'em_atendimento' se estiver 'aguardando'?

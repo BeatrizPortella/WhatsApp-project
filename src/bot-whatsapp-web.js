@@ -165,6 +165,14 @@ async function processarMensagemIndividual(message) {
         } else {
             text = message.body || '';
         }
+
+        if (fromMe) {
+            await salvarMensagemDoCelular(to, text, mediaUrl, mediaType, message.id.id, message.timestamp);
+        } else {
+            const contact = await message.getContact();
+            const pushname = contact.pushname || null;
+            await salvarMensagemCliente(from, text, mediaUrl, mediaType, pushname, message.id.id, message.timestamp);
+        }
     } catch (err) {
         console.error('❌ Erro ao processar mensagem individual:', err);
     }
