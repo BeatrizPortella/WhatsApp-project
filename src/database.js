@@ -154,6 +154,34 @@ async function salvarMensagemAtendente(numeroCliente, atendenteId, conteudo, med
 }
 
 /**
+ * Salva mensagem enviada pelo celular (sem atendente específico)
+ * @param {string} numeroCliente - Número do cliente
+ * @param {string} conteudo - Conteúdo
+ * @param {string} mediaUrl - URL da mídia
+ * @param {string} mediaType - Tipo da mídia
+ * @param {string} whatsappId - ID da mensagem
+ */
+async function salvarMensagemDoCelular(numeroCliente, conteudo, mediaUrl = null, mediaType = null, whatsappId = null) {
+    try {
+        const conversaId = await obterOuCriarConversa(numeroCliente);
+
+        await pool.query(
+            `INSERT INTO mensagens (conversa_id, remetente_tipo, atendente_id, conteudo, media_url, media_type, whatsapp_id, enviado_em, tipo)
+             VALUES ($1, 'atendente', NULL, $2, $3, $4, $5, NOW(), 'mensagem')
+             ON CONFLICT (whatsapp_id) DO NOTHING`,
+            [conversaId, conteudo, mediaUrl, mediaType, whatsappId]
+        );
+
+        // Opcional: Atualizar status para 'em_atendimento' se estiver 'aguardando'?
+        // Por enquanto, não vamos mexer no status nem no atendente_id da conversa
+
+    } catch (error) {
+        console.error('❌ Erro ao salvar mensagem do celular:', error);
+        // Não lançar erro para não parar o bot
+    }
+}
+
+/**
  * Salva nota interna
  * @param {string} numeroCliente - Número do cliente
  * @param {number} atendenteId - ID do atendente
@@ -380,5 +408,6 @@ module.exports = {
     limparConversa,
     deletarConversa,
     alternarFixarConversa,
-    salvarNotaInterna
+    salvarNotaInterna,
+    salvarMensagemDoCelular
 };

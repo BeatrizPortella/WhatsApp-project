@@ -1,7 +1,12 @@
 require('dotenv').config();
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
-const { salvarMensagemCliente, salvarMensagemAtendente } = require('./database');
+const {
+    salvarMensagemCliente,
+    salvarMensagemAtendente,
+    salvarMensagemDoCelular,
+    obterOuCriarConversa
+} = require('./database');
 const fs = require('fs');
 const path = require('path');
 
@@ -77,19 +82,25 @@ async function connectToWhatsApp() {
         console.log('🔄 Reinicie o bot para reconectar\n');
     });
 
-    // Evento: Mensagem recebida
-    client.on('message', async (message) => {
+    // Evento: Mensagem criada (recebida ou enviada)
+    client.on('message_create', async (message) => {
         try {
             // Ignora mensagens de status e grupos
             if (message.from === 'status@broadcast' || message.from.includes('@g.us')) {
                 return;
             }
 
-            // Ignora mensagens enviadas por você
+            // Se for enviada por mim (celular ou bot)
             if (message.fromMe) {
+                // Se foi enviada pelo bot, ela já foi salva pela função enviarMensagem
+                // Mas graças ao ON CONFLICT no banco, podemos tentar salvar sem medo de duplicar
+                // Porém, para performance, ideal seria identificar. 
+                // Como não temos flag fácil, confiamos no ON CONFLICT (idempotência).
+                await processarMensagemIndividual(message);
                 return;
             }
 
+            // Mensagem recebida de terceiros
             await processarMensagemIndividual(message);
 
         } catch (error) {
@@ -148,21 +159,11 @@ async function processarMensagemIndividual(message) {
                     case 'video': text = message.body ? `🎥 Vídeo: ${message.body}` : '🎥 Vídeo'; break;
                     case 'audio': text = '🎵 Áudio'; break;
                     case 'application': text = message.body ? `📄 Documento: ${message.body}` : '📄 Documento'; break;
-                    default: text = '📎 Arquivo';
+                    default: text = message.body || '📎 Mídia';
                 }
-            } else {
-                text = '📎 Mídia (não foi possível baixar)';
             }
         } else {
-            text = message.body || '[Mensagem vazia]';
-        }
-
-        if (fromMe) {
-            await salvarMensagemAtendente(number, null, text, mediaUrl, mediaType, message.id.id);
-        } else {
-            const contact = await message.getContact();
-            const pushname = contact.pushname || null;
-            await salvarMensagemCliente(number, text, mediaUrl, mediaType, pushname, message.id.id);
+            text = message.body || '';
         }
     } catch (err) {
         console.error('❌ Erro ao processar mensagem individual:', err);

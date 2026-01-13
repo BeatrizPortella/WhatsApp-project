@@ -104,10 +104,12 @@
                         </button>
 
                         <!-- Input Normal -->
-                        <div id="input-normal-ui" style="display: flex; flex: 1; gap: 10px;">
+                        <div id="input-normal-ui" style="display: flex; flex: 1; gap: 10px; align-items: center;">
                             <input type="text" id="mensagem-input" placeholder="Digite sua mensagem..."
                                 onkeypress="handleKeyPress(event)">
-                            <button class="btn-icon" id="btn-gravar-audio" title="Gravar Áudio">🎤</button>
+                            <button class="btn-icon" id="btn-gravar-audio" title="Gravar Áudio">
+                                <i data-lucide="mic"></i>
+                            </button>
                         </div>
 
                         <!-- Interface de Gravação -->

@@ -304,7 +304,9 @@ function renderizarMensagens(mensagens) {
 
         const msgHTML = `
             <div class="mensagem ${tipo} ${classeExtra}" data-id="${msg.id}">
-                <button class="btn-reply-msg" onclick="prepararResposta('${msg.id}')" title="Responder">↩️</button>
+                <button class="btn-reply-msg" onclick="prepararResposta('${msg.id}')" title="Responder">
+                    <i data-lucide="corner-up-left"></i>
+                </button>
                 <div class="mensagem-conteudo">
                     ${msg.media_url ? renderizarMedia(msg.media_url, msg.media_type) : ''}
                     <div class="mensagem-texto">${conteudo}</div>

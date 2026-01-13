@@ -869,3 +869,59 @@ body {
     right: -30px; /* Do lado de fora para msg recebida */
     left: auto;
 }
+
+/* --- Reply Button Polish --- */
+.mensagem {
+    position: relative;
+    /* Adiciona padding-top para o botão não sobrepor texto em mensagens curtas se necessário, 
+       mas como é absolute top: -10px, ele fica fora */
+}
+
+.btn-reply-msg {
+    position: absolute;
+    top: 5px; /* Ajuste para ficar dentro ou na borda */
+    right: 5px;
+    background: #ffffff; /* Fundo branco e limpo */
+    color: #54656f;
+    border: none;
+    border-radius: 50%; /* Bolinha */
+    width: 28px;
+    height: 28px;
+    box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+    cursor: pointer;
+    display: none; /* Só mostra no hover */
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0.9;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+.mensagem:hover .btn-reply-msg {
+    display: flex;
+    animation: popIn 0.2s ease-out;
+}
+
+.btn-reply-msg:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    background: #f0f2f5;
+}
+
+.mensagem.enviada .btn-reply-msg {
+    right: auto;
+    left: 5px; /* Inverte lado para msg enviada */
+    background: #dcf8c6; /* Combina com o verde */
+    color: #075e54;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Ajuste dos ícones Lucide dentro dos botões */
+.btn-reply-msg svg {
+    width: 16px;
+    height: 16px;
+}
