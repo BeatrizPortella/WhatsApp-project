@@ -104,14 +104,33 @@ async function carregarAtendentes() {
  */
 function preencherSelectAtendentes() {
     const select = document.getElementById('atendente-select');
+    if (!select) return;
+
     select.innerHTML = '<option value="">Selecione o atendente</option>';
 
-    atendentes.forEach(atendente => {
+    // Remove duplicatas por ID
+    const atendentesUnicos = Array.from(new Map(atendentes.map(item => [item.id, item])).values());
+
+    // Filtra: Se não for admin, mostra apenas o próprio usuário
+    let listaExibicao = atendentesUnicos;
+    if (usuarioLogado && usuarioLogado.nivel !== 'admin') {
+        listaExibicao = atendentesUnicos.filter(a => a.id === usuarioLogado.atendente_id);
+    }
+
+    listaExibicao.forEach(atendente => {
         const option = document.createElement('option');
         option.value = atendente.id;
         option.textContent = atendente.nome;
         select.appendChild(option);
     });
+
+    // Auto-seleciona se s&oacute; tiver 1 opção (além do placeholder)
+    if (listaExibicao.length === 1) {
+        select.value = listaExibicao[0].id;
+    } else if (usuarioLogado) {
+        // Tenta selecionar o usuário atual por padrão
+        select.value = usuarioLogado.atendente_id;
+    }
 }
 
 /**
