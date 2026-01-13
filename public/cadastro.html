@@ -87,14 +87,12 @@
         <h2>Novo Cadastro</h2>
         <form id="cadastro-form">
             <div class="form-group">
-                <label for="atendente">Vincular a Atendente</label>
-                <select id="atendente" class="form-control" required>
-                    <option value="">Selecione...</option>
-                </select>
+                <label for="nome">Seu Nome Completo (Atendente)</label>
+                <input type="text" id="nome" class="form-control" required placeholder="Ex: João da Silva">
             </div>
             <div class="form-group">
-                <label for="usuario">Escolha um Usuário</label>
-                <input type="text" id="usuario" class="form-control" required placeholder="Ex: chalison_atendimento">
+                <label for="usuario">Escolha um Usuário (Login)</label>
+                <input type="text" id="usuario" class="form-control" required placeholder="Ex: joao.silva">
             </div>
             <div class="form-group">
                 <label for="senha">Defina uma Senha</label>
@@ -122,24 +120,9 @@
         }
         checkWhatsApp();
 
-        // Carrega atendentes do banco
-        async function carregarAtendentes() {
-            const response = await fetch('/api/atendentes');
-            const result = await response.json();
-            const select = document.getElementById('atendente');
-
-            result.data.forEach(atendente => {
-                const opt = document.createElement('option');
-                opt.value = atendente.id;
-                opt.textContent = atendente.nome;
-                select.appendChild(opt);
-            });
-        }
-        carregarAtendentes();
-
         document.getElementById('cadastro-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const atendenteId = document.getElementById('atendente').value;
+            const nome = document.getElementById('nome').value;
             const usuario = document.getElementById('usuario').value;
             const senha = document.getElementById('senha').value;
 
@@ -147,7 +130,7 @@
                 const response = await fetch('/api/cadastro', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ atendenteId, usuario, senha })
+                    body: JSON.stringify({ nome, usuario, senha })
                 });
 
                 const result = await response.json();

@@ -312,10 +312,19 @@ app.post('/api/login', async (req, res) => {
  * POST /api/cadastro
  * Cadastra um novo usuário
  */
+/**
+ * POST /api/cadastro
+ * Cadastra um novo usuário/atendente
+ */
 app.post('/api/cadastro', async (req, res) => {
     try {
-        const { atendenteId, usuario, senha } = req.body;
-        await cadastrarUsuario(atendenteId, usuario, senha);
+        const { nome, usuario, senha } = req.body;
+
+        if (!nome || !usuario || !senha) {
+            return res.status(400).json({ success: false, error: 'Todos os campos são obrigatórios' });
+        }
+
+        await cadastrarUsuario(nome, usuario, senha);
         res.json({ success: true });
     } catch (error) {
         console.error('Erro no cadastro:', error);

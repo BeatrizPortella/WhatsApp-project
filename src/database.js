@@ -363,11 +363,34 @@ async function autenticarUsuario(usuario, senha) {
 /**
  * Cadastra um novo usuário
  */
-async function cadastrarUsuario(atendenteId, usuario, senha) {
+/**
+ * Cadastra um novo usuário e atendente (se necessário)
+ */
+async function cadastrarUsuario(nomeAtendente, usuario, senha) {
+    // 1. Verifica/Cria Atendente
+    let atendenteId;
+
+    // Busca por nome (case insensitive)
+    const resAtendente = await pool.query('SELECT id FROM atendentes WHERE lower(nome) = lower($1)', [nomeAtendente]);
+
+    if (resAtendente.rows.length > 0) {
+        atendenteId = resAtendente.rows[0].id;
+    } else {
+        // Cria novo
+        const newAtendente = await pool.query(
+            'INSERT INTO atendentes (nome, ativo) VALUES ($1, true) RETURNING id',
+            [nomeAtendente]
+        );
+        atendenteId = newAtendente.rows[0].id;
+    }
+
+    // 2. Cria Usuário
     await pool.query(
         'INSERT INTO usuarios (atendente_id, usuario, senha) VALUES ($1, $2, $3)',
         [atendenteId, usuario, senha]
     );
+
+    return atendenteId;
 }
 
 /**
