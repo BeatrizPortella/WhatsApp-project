@@ -295,19 +295,15 @@ app.get('/chat', (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { usuario, senha } = req.body;
-        console.log(`🔐 [LOGIN] Tentativa recebida para usuário: '${usuario}'`);
-
         const data = await autenticarUsuario(usuario, senha);
 
         if (data) {
-            console.log(`✅ [LOGIN] Sucesso para: ${usuario} (Nível: ${data.nivel})`);
-            res.json({ success: true, redirect: '/chat', user: data });
+            res.json({ success: true, data });
         } else {
-            console.warn(`⚠️ [LOGIN] Recusado: Credenciais inválidas para '${usuario}'`);
-            res.status(401).json({ success: false, message: 'Usuário ou senha incorretos' });
+            res.status(401).json({ success: false, error: 'Usuário ou senha inválidos' });
         }
     } catch (error) {
-        console.error('❌ [LOGIN] ERRO FATAL:', error);
+        console.error('Erro no login:', error);
         res.status(500).json({ success: false, error: 'Erro interno no servidor' });
     }
 });
