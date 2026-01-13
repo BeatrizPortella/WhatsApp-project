@@ -1,13 +1,11 @@
-// Estado global da aplicação
+// Estado global
 let conversaAtual = null;
-let atendentes = [];
-let intervalAtualizacao = null;
 let usuarioLogado = null;
-let autoScroll = true;
 let lastConversasJSON = null;
 let lastMensagensJSON = null;
 let idsMensagensRenderizadas = new Set();
-let ultimaConversaId = null;
+let autoScroll = true;
+let mensagemRespondida = null; // Armazena a mensagem sendo respondida
 
 // Inicializa a aplicação
 document.addEventListener('DOMContentLoaded', () => {
@@ -306,6 +304,7 @@ function renderizarMensagens(mensagens) {
 
         const msgHTML = `
             <div class="mensagem ${tipo} ${classeExtra}" data-id="${msg.id}">
+                <button class="btn-reply-msg" onclick="prepararResposta('${msg.id}')" title="Responder">↩️</button>
                 <div class="mensagem-conteudo">
                     ${msg.media_url ? renderizarMedia(msg.media_url, msg.media_type) : ''}
                     <div class="mensagem-texto">${conteudo}</div>
@@ -407,7 +406,8 @@ async function enviarMensagem() {
             body: JSON.stringify({
                 numero: conversaAtual.numero,
                 texto: texto,
-                atendenteId: parseInt(atendenteId)
+                atendenteId: parseInt(atendenteId),
+                quotedMessageId: mensagemRespondida ? mensagemRespondida.id : null
             })
         });
 
@@ -422,7 +422,11 @@ async function enviarMensagem() {
             await carregarMensagens(conversaAtual.id);
 
             // Atualiza lista de conversas
+            // Atualiza lista de conversas
             carregarConversas();
+
+            // Limpa resposta se houver
+            cancelarResposta();
         } else {
             alert('Erro ao enviar mensagem: ' + result.error);
         }
@@ -443,7 +447,7 @@ async function atualizarStatus() {
     const novoStatus = select.value;
 
     try {
-        const response = await fetch(`/api/conversa/${conversaAtual.id}/status`, {
+        const response = await fetch(`/ api / conversa / ${conversaAtual.id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: novoStatus })
@@ -770,17 +774,17 @@ let audioChunks = [];
 let recordingTimer;
 let recordingSeconds = 0;
 
-document.addEventListener('DOMContentLoaded', () => { 
+document.addEventListener('DOMContentLoaded', () => {
     // Listeners de Áudio (Adicionados dinamicamente)
     setTimeout(() => {
         const btnGravar = document.getElementById('btn-gravar-audio');
-        if(btnGravar) btnGravar.addEventListener('click', iniciarGravacao);
+        if (btnGravar) btnGravar.addEventListener('click', iniciarGravacao);
 
         const btnCancelar = document.getElementById('btn-cancelar-gravacao');
-        if(btnCancelar) btnCancelar.addEventListener('click', cancelarGravacao);
+        if (btnCancelar) btnCancelar.addEventListener('click', cancelarGravacao);
 
         const btnEnviar = document.getElementById('btn-enviar-audio');
-        if(btnEnviar) btnEnviar.addEventListener('click', finalizarEnvioAudio);
+        if (btnEnviar) btnEnviar.addEventListener('click', finalizarEnvioAudio);
     }, 1000); // Delay para garantir carregamento do DOM
 });
 
@@ -804,7 +808,7 @@ async function iniciarGravacao() {
         // Interface
         document.getElementById('input-normal-ui').style.display = 'none';
         document.getElementById('recording-ui').style.display = 'flex';
-        
+
         // Timer
         recordingSeconds = 0;
         document.getElementById('recording-timer').innerText = "00:00";
@@ -812,7 +816,7 @@ async function iniciarGravacao() {
             recordingSeconds++;
             const min = Math.floor(recordingSeconds / 60).toString().padStart(2, '0');
             const sec = (recordingSeconds % 60).toString().padStart(2, '0');
-            document.getElementById('recording-timer').innerText = min+":"+sec;
+            document.getElementById('recording-timer').innerText = min + ":" + sec;
         }, 1000);
 
     } catch (err) {
@@ -827,7 +831,7 @@ function cancelarGravacao() {
         mediaRecorder.stream.getTracks().forEach(track => track.stop()); // Libera mic
     }
     clearInterval(recordingTimer);
-    
+
     // Restaura UI
     document.getElementById('input-normal-ui').style.display = 'flex';
     document.getElementById('recording-ui').style.display = 'none';
@@ -839,15 +843,15 @@ function finalizarEnvioAudio() {
     // Para e define o callback de envio
     mediaRecorder.onstop = async () => {
         clearInterval(recordingTimer);
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); 
-        
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
         // Prepara upload
         const formData = new FormData();
         const atendente = JSON.parse(localStorage.getItem('usuario'));
-        const filename = "audio_" + Date.now() + ".webm"; 
-        
+        const filename = "audio_" + Date.now() + ".webm";
+
         formData.append('file', audioBlob, filename);
-        formData.append('numero', numeroSelecionado); 
+        formData.append('numero', numeroSelecionado);
         formData.append('atendenteId', atendente.id);
 
         try {
@@ -880,4 +884,30 @@ function finalizarEnvioAudio() {
     };
 
     mediaRecorder.stop();
+}
+
+// --- Lógica de Resposta (Reply) ---
+function prepararResposta(msgId) {
+    const mensagens = JSON.parse(lastMensagensJSON || '[]');
+    const msg = mensagens.find(m => m.id == msgId);
+
+    if (!msg) return;
+
+    mensagemRespondida = msg;
+
+    // Configura UI
+    const autor = msg.remetente_tipo === 'cliente'
+        ? (conversaAtual.nome_cliente || conversaAtual.numero_cliente)
+        : (msg.atendente_nome || 'Atendente');
+
+    document.getElementById('reply-author').textContent = autor;
+    document.getElementById('reply-text').textContent = msg.conteudo || (msg.media_type ? '[Mídia]' : '[Mensagem]');
+
+    document.getElementById('reply-preview-bar').style.display = 'flex';
+    document.getElementById('mensagem-input').focus();
+}
+
+function cancelarResposta() {
+    mensagemRespondida = null;
+    document.getElementById('reply-preview-bar').style.display = 'none';
 }

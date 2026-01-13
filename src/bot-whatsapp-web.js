@@ -206,7 +206,7 @@ async function sincronizarHistoricoRecente() {
  * @param {number} atendenteId - ID do atendente
  * @param {string} nomeAtendente - Nome do atendente
  */
-async function enviarMensagem(numero, texto, atendenteId, nomeAtendente) {
+async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedMessageId = null) {
     try {
         if (!client) {
             throw new Error('WhatsApp não está conectado. Inicie o bot primeiro.');
@@ -230,8 +230,14 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente) {
         // Formata a mensagem com o nome do atendente em negrito em linha separada
         const mensagemCompleta = `*${nomeAtendente}*\n${texto}`;
 
+        // Opções de envio (Reply)
+        const options = {};
+        if (quotedMessageId) {
+            options.quotedMessageId = quotedMessageId;
+        }
+
         // Envia a mensagem
-        const response = await client.sendMessage(numeroFormatado, mensagemCompleta);
+        const response = await client.sendMessage(numeroFormatado, mensagemCompleta, options);
 
         console.log(`✅ Mensagem enviada por ${nomeAtendente} para ${numeroFormatado}`);
 

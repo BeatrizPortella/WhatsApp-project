@@ -88,6 +88,15 @@
                                 <input type="checkbox" id="nota-interna-check"> Nota Interna 📝
                             </label>
                         </div>
+                        <!-- Barra de Resposta (Reply) -->
+                        <div id="reply-preview-bar" class="reply-preview" style="display: none;">
+                            <div class="reply-content">
+                                <span id="reply-author" class="reply-author">Autor</span>
+                                <p id="reply-text" class="reply-text">Texto da mensagem...</p>
+                            </div>
+                            <button class="btn-icon" onclick="cancelarResposta()">❌</button>
+                        </div>
+
                         <input type="file" id="arquivo-input" style="display: none;" onchange="enviarArquivo()">
                         <button class="btn-anexo" title="Enviar arquivo"
                             onclick="document.getElementById('arquivo-input').click()">

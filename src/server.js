@@ -119,7 +119,7 @@ app.get('/api/atendentes', async (req, res) => {
  */
 app.post('/api/enviar', async (req, res) => {
     try {
-        const { numero, texto, atendenteId } = req.body;
+        const { numero, texto, atendenteId, quotedMessageId } = req.body;
 
         // Validações
         if (!numero || !texto || !atendenteId) {
@@ -139,7 +139,7 @@ app.post('/api/enviar', async (req, res) => {
         }
 
         // Envia mensagem via WhatsApp (o próprio bot salva no banco agora)
-        await enviarMensagem(numero, texto, atendenteId, atendente.nome);
+        await enviarMensagem(numero, texto, atendenteId, atendente.nome, quotedMessageId);
 
         res.json({
             success: true,
