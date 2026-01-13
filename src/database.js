@@ -1,70 +1,27 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
-const dns = require('dns');
-const url = require('url');
 
-// Configuração do Pool (inicializada vazia, preenchida após resolver DNS)
-let pool;
 
-/**
- * Resolve o hostname para IPv4 e inicializa o pool
- * Isso corrige o erro ENETUNREACH na AWS (que tenta conectar via IPv6 e falha)
- */
-function inicializarBanco() {
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) {
-        console.error('❌ DATABASE_URL não definida!');
-        return;
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
     }
+});
 
-    try {
-        const parsedUrl = url.parse(dbUrl);
-        const hostname = parsedUrl.hostname;
+pool.on('error', (err) => {
+    console.error('❌ Erro inesperado no cliente do banco:', err);
+});
 
-        console.log(`🔍 Resolvendo DNS para: ${hostname}...`);
-
-        dns.resolve4(hostname, (err, addresses) => {
-            if (err) {
-                console.error('❌ Erro ao resolver DNS do banco:', err);
-                // Tenta conectar mesmo assim (fallback)
-                criarPool(process.env.DATABASE_URL);
-            } else {
-                const ip = addresses[0];
-                console.log(`✅ DNS Resolvido: ${hostname} -> ${ip}`);
-
-                // Substitui hostname pelo IP na connection string
-                const ipUrl = dbUrl.replace(hostname, ip);
-                criarPool(ipUrl);
-            }
-        });
-    } catch (e) {
-        console.error('❌ Erro ao processar DATABASE_URL:', e);
-        criarPool(process.env.DATABASE_URL);
+// Testa conexão ao iniciar
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) {
+        console.error('❌ Erro ao conectar ao banco de dados:', err);
+    } else {
+        console.log('✅ Banco de dados conectado com sucesso:', res.rows[0].now);
     }
-}
-
-function criarPool(connectionString) {
-    pool = new Pool({
-        connectionString: connectionString,
-        ssl: { rejectUnauthorized: false }
-    });
-
-    pool.on('error', (err) => {
-        console.error('❌ Erro inesperado no cliente do banco:', err);
-    });
-
-    // Teste inicial
-    pool.query('SELECT NOW()', (err, res) => {
-        if (err) {
-            console.error('❌ Falha na conexão com banco:', err.code);
-        } else {
-            console.log('✅ Banco de dados conectado com sucesso!');
-        }
-    });
-}
-
-inicializarBanco();
+});
 
 /**
  * Obtém ou cria uma conversa para um cliente
