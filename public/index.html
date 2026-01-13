@@ -93,8 +93,28 @@
                             onclick="document.getElementById('arquivo-input').click()">
                             <i data-lucide="paperclip"></i>
                         </button>
-                        <input type="text" id="mensagem-input" placeholder="Digite sua mensagem..."
-                            onkeypress="handleKeyPress(event)">
+
+                        <!-- Input Normal -->
+                        <div id="input-normal-ui" style="display: flex; flex: 1; gap: 10px;">
+                            <input type="text" id="mensagem-input" placeholder="Digite sua mensagem..."
+                                onkeypress="handleKeyPress(event)">
+                            <button class="btn-icon" id="btn-gravar-audio" title="Gravar Áudio">🎤</button>
+                        </div>
+
+                        <!-- Interface de Gravação -->
+                        <div id="recording-ui" class="recording-mode" style="display: none;">
+                            <div class="recording-indicator">
+                                <div class="red-dot"></div>
+                                <span id="recording-timer">00:00</span>
+                            </div>
+                            <div class="recording-actions">
+                                <button class="btn-icon btn-cancel" id="btn-cancelar-gravacao"
+                                    title="Cancelar">❌</button>
+                                <button class="btn-icon btn-confirm" id="btn-enviar-audio"
+                                    title="Enviar Áudio">✅</button>
+                            </div>
+                        </div>
+
                         <button class="btn-enviar" onclick="enviarMensagem()">
                             <span>Enviar</span>
                             <i data-lucide="send"></i>

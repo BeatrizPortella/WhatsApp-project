@@ -763,3 +763,121 @@ async function reconnectWhatsApp() {
         alert('Erro ao solicitar reconexão');
     }
 }
+
+// --- Lógica de Gravação de Áudio ---
+let mediaRecorder;
+let audioChunks = [];
+let recordingTimer;
+let recordingSeconds = 0;
+
+document.addEventListener('DOMContentLoaded', () => { 
+    // Listeners de Áudio (Adicionados dinamicamente)
+    setTimeout(() => {
+        const btnGravar = document.getElementById('btn-gravar-audio');
+        if(btnGravar) btnGravar.addEventListener('click', iniciarGravacao);
+
+        const btnCancelar = document.getElementById('btn-cancelar-gravacao');
+        if(btnCancelar) btnCancelar.addEventListener('click', cancelarGravacao);
+
+        const btnEnviar = document.getElementById('btn-enviar-audio');
+        if(btnEnviar) btnEnviar.addEventListener('click', finalizarEnvioAudio);
+    }, 1000); // Delay para garantir carregamento do DOM
+});
+
+async function iniciarGravacao() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Seu navegador não suporta gravação de áudio.');
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.start();
+
+        // Interface
+        document.getElementById('input-normal-ui').style.display = 'none';
+        document.getElementById('recording-ui').style.display = 'flex';
+        
+        // Timer
+        recordingSeconds = 0;
+        document.getElementById('recording-timer').innerText = "00:00";
+        recordingTimer = setInterval(() => {
+            recordingSeconds++;
+            const min = Math.floor(recordingSeconds / 60).toString().padStart(2, '0');
+            const sec = (recordingSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('recording-timer').innerText = min+":"+sec;
+        }, 1000);
+
+    } catch (err) {
+        console.error('Erro ao acessar microfone:', err);
+        alert('Erro ao acessar microfone. Verifique as permissões.');
+    }
+}
+
+function cancelarGravacao() {
+    if (mediaRecorder) {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop()); // Libera mic
+    }
+    clearInterval(recordingTimer);
+    
+    // Restaura UI
+    document.getElementById('input-normal-ui').style.display = 'flex';
+    document.getElementById('recording-ui').style.display = 'none';
+}
+
+function finalizarEnvioAudio() {
+    if (!mediaRecorder) return;
+
+    // Para e define o callback de envio
+    mediaRecorder.onstop = async () => {
+        clearInterval(recordingTimer);
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); 
+        
+        // Prepara upload
+        const formData = new FormData();
+        const atendente = JSON.parse(localStorage.getItem('usuario'));
+        const filename = "audio_" + Date.now() + ".webm"; 
+        
+        formData.append('file', audioBlob, filename);
+        formData.append('numero', numeroSelecionado); 
+        formData.append('atendenteId', atendente.id);
+
+        try {
+            // Mostra enviando
+            document.getElementById('recording-ui').style.display = 'none';
+            document.getElementById('input-normal-ui').style.display = 'flex';
+
+            console.log('Enviando áudio...', filename);
+
+            const response = await fetch('/api/enviar-midia', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                console.log('Áudio enviado!');
+                // Pequeno delay para o back processar
+                setTimeout(() => carregarMensagens(numeroSelecionado), 1000);
+            } else {
+                alert('Erro ao enviar áudio: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Erro no envio:', error);
+            alert('Falha ao enviar áudio.');
+        }
+
+        // Limpa recursos
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    };
+
+    mediaRecorder.stop();
+}

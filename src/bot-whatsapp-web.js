@@ -270,7 +270,13 @@ async function enviarMidia(numero, filePath, atendenteId, caption = '', mediaUrl
         }
 
         const media = MessageMedia.fromFilePath(filePath);
-        const response = await client.sendMessage(numeroFormatado, media, { caption });
+
+        let sendOptions = { caption };
+        if (media.mimetype.startsWith('audio/') || filePath.endsWith('.webm') || filePath.endsWith('.mp3')) {
+            sendOptions = { sendAudioAsVoice: true }; // Envia como Nota de Voz (PTT)
+        }
+
+        const response = await client.sendMessage(numeroFormatado, media, sendOptions);
 
         console.log(`✅ Mídia enviada para ${numeroFormatado}`);
 
