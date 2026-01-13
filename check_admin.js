@@ -21,7 +21,7 @@ async function check() {
         console.log('✅ Tabela usuarios existe.');
 
         console.log('🔍 Buscando usuário admin...');
-        const resUser = await pool.query("SELECT * FROM usuarios WHERE username = 'admin'");
+        const resUser = await pool.query("SELECT * FROM usuarios WHERE usuario = 'admin'");
         if (resUser.rows.length === 0) {
             console.error('❌ Usuário admin NÃO encontrado!');
         } else {
