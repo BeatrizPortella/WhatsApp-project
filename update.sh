@@ -9,11 +9,13 @@ rm -rf .wwebjs_auth
 rm -rf .wwebjs_cache
 rm -rf auth_info
 
-echo "📥 Baixando versão manual do GitHub..."
-curl -L -o wwebjs.tar.gz https://github.com/pedroslopez/whatsapp-web.js/archive/refs/heads/webpack-exodus.tar.gz
+echo "🔧 Configurando Git para usar HTTPS..."
+git config --global url."https://github.com/".insteadOf git@github.com:
+git config --global url."https://".insteadOf git://
 
 echo "📦 Instalando dependências..."
 git pull origin main
+rm -rf node_modules
 npm install
 
 echo "🚀 Reiniciando..."
