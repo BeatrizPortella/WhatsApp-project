@@ -428,7 +428,7 @@ async function enviarMensagem() {
                 numero: conversaAtual.numero,
                 texto: texto,
                 atendenteId: parseInt(atendenteId),
-                quotedMessageId: mensagemRespondida ? mensagemRespondida.id : null
+                quotedMessageId: mensagemRespondida ? mensagemRespondida.whatsapp_id : null
             })
         });
 
