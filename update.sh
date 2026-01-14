@@ -14,6 +14,9 @@ echo "📦 Instalando via Tarball (HTTPS)..."
 git pull origin main
 npm install --no-git-tag-version
 
+echo "🔄 Rodando migrações..."
+node src/migrate_v7.js
+
 echo "🚀 Reiniciando..."
 pm2 restart whatsapp-bot --update-env
 

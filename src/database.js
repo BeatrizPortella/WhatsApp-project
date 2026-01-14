@@ -281,6 +281,7 @@ async function listarMensagens(conversaId) {
             m.enviado_em,
             m.tipo,
             m.whatsapp_id,
+            m.quoted_msg_id,
             a.nome as atendente_nome
             FROM mensagens m
             LEFT JOIN atendentes a ON m.atendente_id = a.id

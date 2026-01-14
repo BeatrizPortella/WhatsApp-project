@@ -274,7 +274,9 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
 
         // Salva no banco com o ID real do WhatsApp para evitar duplicidade no futuro
         const whatsappId = sentMessage?.id?.id || null;
-        await salvarMensagemAtendente(numero, atendenteId, texto, null, null, whatsappId);
+        // Usa o ID que enviamos (formatado) ou null
+        const savedQuotedId = options.quotedMessageId || null;
+        await salvarMensagemAtendente(numero, atendenteId, texto, null, null, whatsappId, null, savedQuotedId);
 
         return { success: true, messageId: whatsappId };
 
