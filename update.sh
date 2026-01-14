@@ -9,7 +9,10 @@ rm -rf .wwebjs_auth
 rm -rf .wwebjs_cache
 rm -rf auth_info
 
-echo "📥 Baixando última versão da lib..."
+echo "📥 Baixando versão manual do GitHub..."
+curl -L -o wwebjs.tar.gz https://github.com/pedroslopez/whatsapp-web.js/archive/refs/heads/webpack-exodus.tar.gz
+
+echo "📦 Instalando dependências..."
 git pull origin main
 npm install
 
