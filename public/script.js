@@ -321,12 +321,36 @@ function renderizarMensagens(mensagens) {
             conteudo = `📝 <i>Nota Interna:</i><br>${msg.conteudo}`;
         }
 
+        // Lógica de Citação
+        let quoteHTML = '';
+        if (msg.quoted_msg_id) {
+            const allMensagens = window.lastMensagensJSON ? JSON.parse(window.lastMensagensJSON) : mensagens;
+            const msgCitada = allMensagens.find(m =>
+                m.whatsapp_id && (msg.quoted_msg_id.includes(m.whatsapp_id) || m.whatsapp_id === msg.quoted_msg_id)
+            );
+
+            if (msgCitada) {
+                const autorCitado = msgCitada.remetente_tipo === 'cliente'
+                    ? (conversaAtual.nome_cliente || conversaAtual.numero_cliente)
+                    : (msgCitada.atendente_nome || 'Atendente');
+                const textoCitado = msgCitada.conteudo || (msgCitada.media_url ? '[Mídia]' : '[Mensagem]');
+
+                quoteHTML = `
+                    <div class="reply-bubble" onclick="document.querySelector('.mensagem[data-id=\\'${msgCitada.id}\\']')?.scrollIntoView({behavior:'smooth',block:'center'})">
+                        <div class="reply-author">${autorCitado}</div>
+                        <div class="reply-text">${textoCitado}</div>
+                    </div>
+                `;
+            }
+        }
+
         const msgHTML = `
             <div class="mensagem ${tipo} ${classeExtra}" data-id="${msg.id}">
                 <button class="btn-reply-msg" onclick="prepararResposta('${msg.id}')" title="Responder">
                     <i data-lucide="corner-up-left"></i>
                 </button>
                 <div class="mensagem-conteudo">
+                    ${quoteHTML}
                     ${msg.media_url ? renderizarMedia(msg.media_url, msg.media_type) : ''}
                     <div class="mensagem-texto">${conteudo}</div>
                     <div class="mensagem-hora">${hora}</div>

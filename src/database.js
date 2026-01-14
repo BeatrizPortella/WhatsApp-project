@@ -129,7 +129,7 @@ async function salvarMensagemCliente(numeroCliente, conteudo, mediaUrl = null, m
 /**
  * Salva mensagem do atendente no banco
  */
-async function salvarMensagemAtendente(numeroCliente, atendenteId, conteudo, mediaUrl = null, mediaType = null, whatsappId = null, timestamp = null) {
+async function salvarMensagemAtendente(numeroCliente, atendenteId, conteudo, mediaUrl = null, mediaType = null, whatsappId = null, timestamp = null, quotedMessageId = null) {
     try {
         const conversaId = await obterOuCriarConversa(numeroCliente);
 
@@ -142,10 +142,10 @@ async function salvarMensagemAtendente(numeroCliente, atendenteId, conteudo, med
         const dataEnvio = timestamp ? new Date(timestamp * 1000) : 'NOW()';
 
         await pool.query(
-            `INSERT INTO mensagens (conversa_id, remetente_tipo, atendente_id, conteudo, media_url, media_type, whatsapp_id, enviado_em, tipo)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            `INSERT INTO mensagens (conversa_id, remetente_tipo, atendente_id, conteudo, media_url, media_type, whatsapp_id, enviado_em, tipo, quoted_msg_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
              ON CONFLICT (whatsapp_id) DO NOTHING`,
-            [conversaId, 'atendente', atendenteId, conteudo, mediaUrl, mediaType, whatsappId, dataEnvio, 'mensagem']
+            [conversaId, 'atendente', atendenteId, conteudo, mediaUrl, mediaType, whatsappId, dataEnvio, 'mensagem', quotedMessageId]
         );
 
 
