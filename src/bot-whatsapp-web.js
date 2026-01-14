@@ -26,7 +26,8 @@ async function connectToWhatsApp() {
             dataPath: './auth_info'
         }),
         webVersionCache: {
-            type: 'none'
+            type: 'remote',
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1029925925-alpha.html',
         },
         puppeteer: {
             headless: true,
