@@ -246,8 +246,15 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
             options.quotedMessageId = quotedMessageId;
         }
 
-        // Envia a mensagem
-        const response = await client.sendMessage(numeroFormatado, mensagemCompleta, options);
+        // Tenta buscar o chat antes de enviar (Workaround para bug do WWebJS)
+        console.log(`📨 Enviando mensagem para ${numeroFormatado}...`);
+        try {
+            const chat = await client.getChatById(numeroFormatado);
+            await chat.sendMessage(mensagemCompleta, options);
+        } catch (innerError) {
+            console.warn('⚠️ Falha ao enviar via chat object, tentando via client direct...', innerError);
+            await client.sendMessage(numeroFormatado, mensagemCompleta, options);
+        }
 
         console.log(`✅ Mensagem enviada por ${nomeAtendente} para ${numeroFormatado}`);
 
