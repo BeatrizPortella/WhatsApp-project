@@ -245,7 +245,17 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
         const options = {};
         if (quotedMessageId) {
             console.log(`🔍 DEBUG: quotedMessageId recebido: ${quotedMessageId}`);
-            options.quotedMessageId = quotedMessageId;
+
+            // O WhatsApp Web espera o ID no formato: true_NUMERO@c.us_ID ou false_NUMERO@c.us_ID
+            // Se o ID recebido não tem esse formato, vamos construí-lo
+            let fullQuotedId = quotedMessageId;
+            if (!quotedMessageId.includes('_')) {
+                // Construir o ID completo: false (mensagem recebida) + número + ID
+                fullQuotedId = `false_${numeroFormatado}_${quotedMessageId}`;
+                console.log(`🔍 DEBUG: ID construído: ${fullQuotedId}`);
+            }
+
+            options.quotedMessageId = fullQuotedId;
         }
 
         // Tenta buscar o chat antes de enviar (Workaround para bug do WWebJS)
