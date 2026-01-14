@@ -244,11 +244,13 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
         // Opções de envio (Reply)
         const options = {};
         if (quotedMessageId) {
+            console.log(`🔍 DEBUG: quotedMessageId recebido: ${quotedMessageId}`);
             options.quotedMessageId = quotedMessageId;
         }
 
         // Tenta buscar o chat antes de enviar (Workaround para bug do WWebJS)
         console.log(`📨 Enviando mensagem para ${numeroFormatado}...`);
+        console.log(`🔍 DEBUG: Opções de envio:`, JSON.stringify(options));
         let sentMessage;
         try {
             const chat = await client.getChatById(numeroFormatado);
