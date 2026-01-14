@@ -712,15 +712,17 @@ function formatarHora(dataISO) {
     const agora = new Date();
 
     const optionsTime = { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' };
-    const optionsDate = { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' };
 
     // Compara datas usando o timezone de Brasília
     const dataBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'America/Sao_Paulo' }).format(data);
     const agoraBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'America/Sao_Paulo' }).format(agora);
 
+    // Formatação da Hora: 14:30
+    const horaFormatada = data.toLocaleTimeString('pt-BR', optionsTime);
+
     // Se for hoje, mostra só a hora
     if (dataBR === agoraBR) {
-        return data.toLocaleTimeString('pt-BR', optionsTime);
+        return horaFormatada;
     }
 
     // Ontem
@@ -729,11 +731,12 @@ function formatarHora(dataISO) {
     const ontemBR = new Intl.DateTimeFormat('pt-BR', { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'America/Sao_Paulo' }).format(ontem);
 
     if (dataBR === ontemBR) {
-        return 'Ontem';
+        return `Ontem ${horaFormatada}`;
     }
 
-    // Caso contrário, mostra a data
-    return data.toLocaleDateString('pt-BR', optionsDate);
+    // Caso contrário, mostra Data + Hora (ex: 13/01/2026 14:30)
+    const dataFormatada = data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'America/Sao_Paulo' });
+    return `${dataFormatada} ${horaFormatada}`;
 }
 
 /**
