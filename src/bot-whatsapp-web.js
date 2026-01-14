@@ -249,20 +249,22 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
 
         // Tenta buscar o chat antes de enviar (Workaround para bug do WWebJS)
         console.log(`📨 Enviando mensagem para ${numeroFormatado}...`);
+        let sentMessage;
         try {
             const chat = await client.getChatById(numeroFormatado);
-            await chat.sendMessage(mensagemCompleta, options);
+            sentMessage = await chat.sendMessage(mensagemCompleta, options);
         } catch (innerError) {
             console.warn('⚠️ Falha ao enviar via chat object, tentando via client direct...', innerError);
-            await client.sendMessage(numeroFormatado, mensagemCompleta, options);
+            sentMessage = await client.sendMessage(numeroFormatado, mensagemCompleta, options);
         }
 
         console.log(`✅ Mensagem enviada por ${nomeAtendente} para ${numeroFormatado}`);
 
         // Salva no banco com o ID real do WhatsApp para evitar duplicidade no futuro
-        await salvarMensagemAtendente(numero, atendenteId, texto, null, null, response.id.id);
+        const whatsappId = sentMessage?.id?.id || null;
+        await salvarMensagemAtendente(numero, atendenteId, texto, null, null, whatsappId);
 
-        return { success: true, messageId: response.id.id };
+        return { success: true, messageId: whatsappId };
 
     } catch (error) {
         console.error('❌ Erro ao enviar mensagem:', error.message);
