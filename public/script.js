@@ -324,12 +324,34 @@ function renderizarMensagens(mensagens) {
         // Lógica de Citação
         let quoteHTML = '';
         if (msg.quoted_msg_id) {
+            console.log('🔍 DEBUG Frontend: Mensagem tem quoted_msg_id:', msg.quoted_msg_id);
             const allMensagens = window.lastMensagensJSON ? JSON.parse(window.lastMensagensJSON) : mensagens;
-            const msgCitada = allMensagens.find(m =>
-                m.whatsapp_id && (msg.quoted_msg_id.includes(m.whatsapp_id) || m.whatsapp_id === msg.quoted_msg_id)
-            );
+            console.log('🔍 DEBUG Frontend: Total de mensagens disponíveis:', allMensagens.length);
+
+            // Tenta encontrar a mensagem citada de várias formas
+            const msgCitada = allMensagens.find(m => {
+                if (!m.whatsapp_id) return false;
+
+                // Comparação direta
+                if (m.whatsapp_id === msg.quoted_msg_id) return true;
+
+                // Se o quoted_msg_id contém o whatsapp_id
+                if (msg.quoted_msg_id.includes(m.whatsapp_id)) return true;
+
+                // Se o whatsapp_id contém o quoted_msg_id
+                if (m.whatsapp_id.includes(msg.quoted_msg_id)) return true;
+
+                // Extrai apenas o ID final (após último underscore) e compara
+                const quotedIdParts = msg.quoted_msg_id.split('_');
+                const msgIdParts = m.whatsapp_id.split('_');
+                const quotedFinalId = quotedIdParts[quotedIdParts.length - 1];
+                const msgFinalId = msgIdParts[msgIdParts.length - 1];
+
+                return quotedFinalId === msgFinalId;
+            });
 
             if (msgCitada) {
+                console.log('✅ DEBUG Frontend: Mensagem citada encontrada!', msgCitada.id);
                 const autorCitado = msgCitada.remetente_tipo === 'cliente'
                     ? (conversaAtual.nome_cliente || conversaAtual.numero_cliente)
                     : (msgCitada.atendente_nome || 'Atendente');
@@ -341,6 +363,9 @@ function renderizarMensagens(mensagens) {
                         <div class="reply-text">${textoCitado}</div>
                     </div>
                 `;
+            } else {
+                console.warn('⚠️ DEBUG Frontend: Mensagem citada NÃO encontrada. IDs disponíveis:',
+                    allMensagens.map(m => m.whatsapp_id).filter(Boolean));
             }
         }
 
