@@ -243,8 +243,11 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
 
         // Verifica se o cliente está pronto
         const state = await client.getState();
-        if (state !== 'CONNECTED') {
-            throw new Error(`WhatsApp não está pronto. Estado atual: ${state}`);
+        console.log(`📊 Estado atual do WhatsApp: ${state}`);
+
+        // Aceita CONNECTED ou OPENING (quando está reconectando)
+        if (state !== 'CONNECTED' && state !== 'OPENING') {
+            throw new Error(`WhatsApp não está pronto. Estado atual: ${state}. Por favor, aguarde a reconexão.`);
         }
 
         // Garante que o número está no formato correto (@c.us)
