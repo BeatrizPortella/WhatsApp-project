@@ -107,17 +107,20 @@ async function obterOuCriarConversa(numeroCliente, nomeCliente = null) {
  * Salva mensagem do cliente no banco
  * @param {string} date - Data da mensagem (opcional)
  */
-async function salvarMensagemCliente(numeroCliente, conteudo, mediaUrl = null, mediaType = null, nomeCliente = null, whatsappId = null, timestamp = null) {
+async function salvarMensagemCliente(numeroCliente, conteudo, mediaUrl = null, mediaType = null, nomeCliente = null, whatsappId = null, timestamp = null, quotedMessageId = null) {
     try {
         const conversaId = await obterOuCriarConversa(numeroCliente, nomeCliente);
+
+        // Atualiza status da conversa para 'aguardando'
+        await pool.query('UPDATE conversas SET status = $1 WHERE id = $2', ['aguardando', conversaId]);
 
         const dataEnvio = timestamp ? new Date(timestamp * 1000) : 'NOW()';
 
         await pool.query(
-            `INSERT INTO mensagens (conversa_id, remetente_tipo, conteudo, media_url, media_type, whatsapp_id, enviado_em)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO mensagens (conversa_id, remetente_tipo, atendente_id, conteudo, media_url, media_type, whatsapp_id, enviado_em, tipo, quoted_msg_id)
+             VALUES ($1, 'cliente', NULL, $2, $3, $4, $5, $6, 'mensagem', $7)
              ON CONFLICT (whatsapp_id) DO NOTHING`,
-            [conversaId, 'cliente', conteudo, mediaUrl, mediaType, whatsappId, dataEnvio]
+            [conversaId, conteudo, mediaUrl, mediaType, whatsappId, dataEnvio, quotedMessageId]
         );
 
     } catch (error) {
@@ -167,17 +170,17 @@ async function salvarMensagemAtendente(numeroCliente, atendenteId, conteudo, med
  * Salva mensagem enviada pelo celular (sem atendente específico)
  * @param {string} timestamp - Timestamp Unix (segundos) ou null
  */
-async function salvarMensagemDoCelular(numeroCliente, conteudo, mediaUrl = null, mediaType = null, whatsappId = null, timestamp = null) {
+async function salvarMensagemDoCelular(numeroCliente, conteudo, mediaUrl = null, mediaType = null, whatsappId = null, timestamp = null, quotedMessageId = null) {
     try {
         const conversaId = await obterOuCriarConversa(numeroCliente);
 
         const dataEnvio = timestamp ? new Date(timestamp * 1000) : 'NOW()';
 
         await pool.query(
-            `INSERT INTO mensagens (conversa_id, remetente_tipo, atendente_id, conteudo, media_url, media_type, whatsapp_id, enviado_em, tipo)
-             VALUES ($1, 'atendente', NULL, $2, $3, $4, $5, $6, 'mensagem')
+            `INSERT INTO mensagens (conversa_id, remetente_tipo, atendente_id, conteudo, media_url, media_type, whatsapp_id, enviado_em, tipo, quoted_msg_id)
+             VALUES ($1, 'atendente', NULL, $2, $3, $4, $5, $6, 'mensagem', $7)
              ON CONFLICT (whatsapp_id) DO NOTHING`,
-            [conversaId, conteudo, mediaUrl, mediaType, whatsappId, dataEnvio]
+            [conversaId, conteudo, mediaUrl, mediaType, whatsappId, dataEnvio, quotedMessageId]
         );
 
         // Opcional: Atualizar status para 'em_atendimento' se estiver 'aguardando'?

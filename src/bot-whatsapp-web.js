@@ -136,11 +136,24 @@ async function processarMensagemIndividual(message) {
     const to = message.to;
     const number = fromMe ? to : from;
 
-    let text = '';
+    let text = message.body || '';
     let mediaUrl = null;
     let mediaType = null;
+    let quotedMsgId = null;
 
     try {
+        // Tenta capturar ID da mensagem citada (se houver)
+        if (message.hasQuotedMsg) {
+            // No WWebJS, message._data.quotedMsg pode ter o ID, ou message.quotedMsgId
+            // message.getQuotedMessage() é async, mas message.quotedMsgId deve estar disponível
+            quotedMsgId = message._data?.quotedMsg?.id || message.quotedMsgId || null;
+
+            // Garante que é uma string se for objeto
+            if (typeof quotedMsgId === 'object' && quotedMsgId !== null) {
+                quotedMsgId = quotedMsgId._serialized || quotedMsgId.id;
+            }
+        }
+
         if (message.hasMedia) {
             const media = await message.downloadMedia();
             if (media) {
@@ -164,16 +177,21 @@ async function processarMensagemIndividual(message) {
                     default: text = message.body || '📎 Mídia';
                 }
             }
-        } else {
-            text = message.body || '';
         }
 
         if (fromMe) {
-            await salvarMensagemDoCelular(to, text, mediaUrl, mediaType, message.id.id, message.timestamp);
+            // Limpa o nome do atendente em negrito (*Nome*\n) se existir, para não duplicar no frontend
+            // Regex: Começa com *, tem caracteres não *, termina com * e quebra de linha
+            const nameRegex = /^\*[^*]+\*\n/;
+            if (nameRegex.test(text)) {
+                text = text.replace(nameRegex, '');
+            }
+
+            await salvarMensagemDoCelular(to, text, mediaUrl, mediaType, message.id.id, message.timestamp, quotedMsgId);
         } else {
             const contact = await message.getContact();
             const pushname = contact.pushname || null;
-            await salvarMensagemCliente(from, text, mediaUrl, mediaType, pushname, message.id.id, message.timestamp);
+            await salvarMensagemCliente(from, text, mediaUrl, mediaType, pushname, message.id.id, message.timestamp, quotedMsgId);
         }
     } catch (err) {
         console.error('❌ Erro ao processar mensagem individual:', err);
