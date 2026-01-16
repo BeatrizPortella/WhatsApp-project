@@ -8,13 +8,49 @@ PUBLISHABLE_KEY: sb_publishable_t2CkEDe4uOWU0sxhd-hm3g_Ut_XK4we
 
 melhorias:
 
-- opção de iniciar uma nova conversa
-- puxar o nome do cliente no whatsapp
-- enviar midias
-- enviar arquivos
-- apagar mensagem e limpar conversa
-- mudar os nomes dos atendentes para Chalison e Chaene
-- criar uma tela de login para os atendentes
-- criar uma tela de cadastro para os atendentes
-- criar uma tela de configuração para os atendentes
-- as conversas devem ser organizadas de acordo com o ultimo horário da mensagem enviada, então se alguém manda mensagem, ela sobe pro topo da lista
+- Se o WhatsApp cair depois de já estar em produção?
+👉 Sugestões:
+Banner global: “⚠️ WhatsApp desconectado”
+Bloquear envio enquanto offline
+Logar evento de queda
+Botão “Reconectar”
+
+- Indicador “Quem está atendendo”
+Visual na conversa, tipo:
+🔵 Em atendimento por Chaene
+
+- Mensagens internas (nota privada)
+Mensagem que:
+NÃO vai para o cliente
+Só aparece no painel
+Exemplo:
+📝 Cliente pediu orçamento, aguardar retorno financeiro
+
+- Marcação de não lidas por operador
+Hoje você tem “novas mensagens”, mas pense nisso:
+Operador A entrou
+Viu a mensagem
+Operador B entra depois
+👉 Mensagem deveria:
+Continuar não lida para B
+
+- 
+
+
+ssh -i "whatsapp-aws-key.pem" ubuntu@18.228.154.100
+pm2 stop whatsapp-bot
+
+5. Como Atualizar no Futuro?
+Quando você fizer alterações no código e quiser atualizar o servidor:
+
+Acesse via SSH.
+Atualize o código:
+git add .
+git commit -m "Fix: atualização do bot"
+git push origin main
+
+Atualize o servidor:
+cd ~/WhatsApp-project
+git pull origin main
+pm2 restart whatsapp-bot
+

@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 echo "🚀 Iniciando configuração do servidor WhatsApp..."
