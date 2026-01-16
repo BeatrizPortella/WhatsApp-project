@@ -275,16 +275,31 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
             options.quotedMessageId = fullQuotedId;
         }
 
-        // Tenta buscar o chat antes de enviar (Workaround para bug do WWebJS)
+        // Tenta enviar mensagem com retry específico para erro de 'markedUnread'
         console.log(`📨 Enviando mensagem para ${numeroFormatado}...`);
-        console.log(`🔍 DEBUG: Opções de envio:`, JSON.stringify(options));
+
         let sentMessage;
         try {
-            const chat = await client.getChatById(numeroFormatado);
-            sentMessage = await chat.sendMessage(mensagemCompleta, options);
-        } catch (innerError) {
-            console.warn('⚠️ Falha ao enviar via chat object, tentando via client direct...', innerError);
+            // Tenta via client.sendMessage direto primeiro (tem menos dependência de estado de chat)
             sentMessage = await client.sendMessage(numeroFormatado, mensagemCompleta, options);
+        } catch (error) {
+            console.warn(`⚠️ Erro no primeiro envio: ${error.message}`);
+
+            // Se o erro for o 'markedUnread' ou propriedades indefinidas, tenta buscar o chat e reenviar
+            if (error.message.includes('markedUnread') || error.message.includes('undefined')) {
+                console.log('🔄 Tentando workaround para erro de estado do chat...');
+                try {
+                    const chat = await client.getChatById(numeroFormatado);
+                    // Força um pequeno delay para o chat carregar
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    sentMessage = await chat.sendMessage(mensagemCompleta, options);
+                } catch (retryError) {
+                    // Se falhar de novo, lança o erro original
+                    throw error;
+                }
+            } else {
+                throw error;
+            }
         }
 
         console.log(`✅ Mensagem enviada por ${nomeAtendente} para ${numeroFormatado}`);
