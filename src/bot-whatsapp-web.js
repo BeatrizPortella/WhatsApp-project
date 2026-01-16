@@ -23,12 +23,9 @@ async function connectToWhatsApp() {
     // Cria cliente WhatsApp
     client = new Client({
         authStrategy: new LocalAuth({
+            clientId: 'client-one',
             dataPath: './auth_info'
         }),
-        webVersionCache: {
-            type: 'remote',
-            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html',
-        },
         puppeteer: {
             headless: true,
             args: [
@@ -38,10 +35,9 @@ async function connectToWhatsApp() {
                 '--disable-accelerated-2d-canvas',
                 '--no-first-run',
                 '--no-zygote',
-                '--disable-gpu',
-                '--disk-cache-size=0',
-                '--bypass-csp'
-            ]
+                '--disable-gpu'
+            ],
+            executablePath: process.platform === 'linux' ? '/usr/bin/chromium-browser' : undefined
         }
     });
 
