@@ -353,7 +353,7 @@ function renderizarMensagens(mensagens) {
             if (msgCitada) {
                 console.log('✅ DEBUG Frontend: Mensagem citada encontrada!', msgCitada.id);
                 const autorCitado = msgCitada.remetente_tipo === 'cliente'
-                    ? (conversaAtual.nome_cliente || conversaAtual.numero_cliente)
+                    ? (conversaAtual.nome_cliente || conversaAtual.numero_cliente || 'Cliente')
                     : (msgCitada.atendente_nome || 'Atendente');
                 const textoCitado = msgCitada.conteudo || (msgCitada.media_url ? '[Mídia]' : '[Mensagem]');
 
