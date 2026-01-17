@@ -10,6 +10,7 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const QRCode = require('qrcode');
 const {
     listarConversas,
     listarMensagens,
@@ -237,14 +238,23 @@ app.get('/api/status', (req, res) => {
  * GET /api/whatsapp/status
  * Retorna status da conexão WhatsApp e QR Code se disponível
  */
-app.get('/api/whatsapp/status', (req, res) => {
+app.get('/api/whatsapp/status', async (req, res) => {
     try {
-        const status = getConnectionStatus();
-        res.json(status);
+        const { connected } = getConnectionStatus(); // Retorna só { connected: boolean } pois bot.js não retorna mais o objeto completo
+        const rawQR = getQRCode();
+        let qrImage = null;
+
+        if (rawQR) {
+            qrImage = await QRCode.toDataURL(rawQR);
+        }
+
+        res.json({
+            connected: connected === 'CONNECTED',
+            qr: qrImage
+        });
     } catch (error) {
         res.json({
             connected: false,
-            hasClient: false,
             qr: null
         });
     }
@@ -254,11 +264,12 @@ app.get('/api/whatsapp/status', (req, res) => {
  * GET /api/whatsapp/qr
  * Retorna apenas o QR Code em base64
  */
-app.get('/api/whatsapp/qr', (req, res) => {
+app.get('/api/whatsapp/qr', async (req, res) => {
     try {
         const qr = getQRCode();
         if (qr) {
-            res.json({ success: true, qr });
+            const qrImage = await QRCode.toDataURL(qr);
+            res.json({ success: true, qr: qrImage });
         } else {
             res.json({ success: false, message: 'QR Code não disponível' });
         }
