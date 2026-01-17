@@ -240,7 +240,7 @@ app.get('/api/status', (req, res) => {
  */
 app.get('/api/whatsapp/status', async (req, res) => {
     try {
-        const { connected } = getConnectionStatus(); // Retorna só { connected: boolean } pois bot.js não retorna mais o objeto completo
+        const status = getConnectionStatus();
         const rawQR = getQRCode();
         let qrImage = null;
 
@@ -249,7 +249,7 @@ app.get('/api/whatsapp/status', async (req, res) => {
         }
 
         res.json({
-            connected: connected === 'CONNECTED',
+            connected: status === 'CONNECTED',
             qr: qrImage
         });
     } catch (error) {
@@ -281,8 +281,8 @@ app.get('/api/whatsapp/qr', async (req, res) => {
 // Rota raiz - redireciona dinamicamente baseada no status do WhatsApp
 app.get('/', (req, res) => {
     try {
-        const { connected } = getConnectionStatus();
-        if (connected) {
+        const status = getConnectionStatus();
+        if (status === 'CONNECTED') {
             // Se o WhatsApp já estiver conectado, vai para o login
             res.redirect('/login.html');
         } else {
