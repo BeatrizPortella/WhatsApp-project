@@ -1,15 +1,27 @@
 require('dotenv').config();
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, makeInMemoryStore } = require('@whiskeysockets/baileys');
 const P = require('pino');
+const fs = require('fs');
 const qrcode = require('qrcode-terminal');
 const { salvarMensagemCliente, obterOuCriarConversa, salvarMensagemAtendente } = require('./database');
 
 let sock = null;
 let qrCode = null;
 const store = makeInMemoryStore({ logger: P({ level: 'silent' }) });
-store.readFromFile('./baileys_store_multi.json');
+try {
+    if (fs.existsSync('./baileys_store_multi.json')) {
+        store.readFromFile('./baileys_store_multi.json');
+    }
+} catch (err) {
+    console.error('Erro ao ler store:', err);
+}
+
 setInterval(() => {
-    store.writeToFile('./baileys_store_multi.json');
+    try {
+        store.writeToFile('./baileys_store_multi.json');
+    } catch (err) {
+        console.error('Erro ao salvar store:', err);
+    }
 }, 10_000);
 
 function getQRCode() {
