@@ -2,21 +2,53 @@ require('dotenv').config();
 const BaileysLib = require('@whiskeysockets/baileys');
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = BaileysLib;
 
-// Polyfill seguro para makeInMemoryStore caso não seja exportado (previne crash)
-let makeInMemoryStore = BaileysLib.makeInMemoryStore;
-if (typeof makeInMemoryStore !== 'function') {
-    console.warn('⚠️ makeInMemoryStore não encontrado nas exportações do Baileys. Usando fallback simples.');
-    console.log('📦 Exportações disponíveis:', Object.keys(BaileysLib));
+// Implementação manual do Store para garantir funcionamento independente da versão da lib
+const makeInMemoryStore = (config = {}) => {
+    const chats = {};
+    const logger = config.logger || { debug: () => { }, info: () => { }, error: () => { } };
 
-    makeInMemoryStore = (config) => {
-        return {
-            bind: (ev) => console.log('ℹ️ Store (mock) vinculada aos eventos'),
-            readFromFile: (path) => console.log('ℹ️ Leitura de arquivo ignorada (Store mock)'),
-            writeToFile: (path) => { },
-            loadMessage: async (jid, id) => null // Retorna null para não quebrar a lógica de citação
-        };
+    return {
+        chats,
+        bind: (ev) => {
+            ev.on('messages.upsert', ({ messages }) => {
+                for (const msg of messages) {
+                    const jid = msg.key.remoteJid;
+                    if (!chats[jid]) chats[jid] = [];
+                    // Evita duplicatas
+                    if (!chats[jid].find(m => m.key.id === msg.key.id)) {
+                        chats[jid].push(msg);
+                        // Limita histórico em memória (ex: 50 últimas mensagens por chat)
+                        if (chats[jid].length > 50) chats[jid].shift();
+                    }
+                }
+            });
+        },
+        loadMessage: async (jid, id) => {
+            if (chats[jid]) {
+                return chats[jid].find(m => m.key.id === id);
+            }
+            return null;
+        },
+        readFromFile: (path) => {
+            try {
+                if (fs.existsSync(path)) {
+                    const data = JSON.parse(fs.readFileSync(path, 'utf-8'));
+                    Object.assign(chats, data);
+                    logger.info(`Store carregada de ${path}`);
+                }
+            } catch (err) {
+                logger.error(`Erro ao ler store de ${path}:`, err);
+            }
+        },
+        writeToFile: (path) => {
+            try {
+                fs.writeFileSync(path, JSON.stringify(chats));
+            } catch (err) {
+                logger.error(`Erro ao escrever store em ${path}:`, err);
+            }
+        }
     };
-}
+};
 const P = require('pino');
 const fs = require('fs');
 const qrcode = require('qrcode-terminal');
