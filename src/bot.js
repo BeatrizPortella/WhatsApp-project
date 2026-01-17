@@ -1,5 +1,22 @@
 require('dotenv').config();
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, makeInMemoryStore } = require('@whiskeysockets/baileys');
+const BaileysLib = require('@whiskeysockets/baileys');
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = BaileysLib;
+
+// Polyfill seguro para makeInMemoryStore caso não seja exportado (previne crash)
+let makeInMemoryStore = BaileysLib.makeInMemoryStore;
+if (typeof makeInMemoryStore !== 'function') {
+    console.warn('⚠️ makeInMemoryStore não encontrado nas exportações do Baileys. Usando fallback simples.');
+    console.log('📦 Exportações disponíveis:', Object.keys(BaileysLib));
+
+    makeInMemoryStore = (config) => {
+        return {
+            bind: (ev) => console.log('ℹ️ Store (mock) vinculada aos eventos'),
+            readFromFile: (path) => console.log('ℹ️ Leitura de arquivo ignorada (Store mock)'),
+            writeToFile: (path) => { },
+            loadMessage: async (jid, id) => null // Retorna null para não quebrar a lógica de citação
+        };
+    };
+}
 const P = require('pino');
 const fs = require('fs');
 const qrcode = require('qrcode-terminal');
