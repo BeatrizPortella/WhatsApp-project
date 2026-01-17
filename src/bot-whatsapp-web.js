@@ -5,7 +5,8 @@ const {
     connectToWhatsApp,
     enviarMensagem,
     marcarComoLida,
-    getSocket
+    getSocket,
+    getQRCode
 } = require('./bot');
 
 /**
