@@ -21,7 +21,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@whiskeysockets/baileys": "^7.0.0",
+    "@whiskeysockets/baileys": "^6.7.21",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
