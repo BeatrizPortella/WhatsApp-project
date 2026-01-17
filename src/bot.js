@@ -1,11 +1,16 @@
 require('dotenv').config();
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, makeInMemoryStore } = require('@whiskeysockets/baileys');
 const P = require('pino');
 const qrcode = require('qrcode-terminal');
 const { salvarMensagemCliente, obterOuCriarConversa, salvarMensagemAtendente } = require('./database');
 
 let sock = null;
 let qrCode = null;
+const store = makeInMemoryStore({ logger: P({ level: 'silent' }) });
+store.readFromFile('./baileys_store_multi.json');
+setInterval(() => {
+    store.writeToFile('./baileys_store_multi.json');
+}, 10_000);
 
 function getQRCode() {
     return qrCode;
@@ -33,6 +38,9 @@ async function connectToWhatsApp() {
             syncFullHistory: false,
             defaultQueryTimeoutMs: 60000
         });
+
+        // Conecta a store aos eventos do socket
+        store.bind(sock.ev);
 
         // Evento de atualização de conexão
         sock.ev.on('connection.update', async (update) => {
@@ -136,12 +144,16 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
                 quotedId = parts[parts.length - 1];
             }
             try {
-                // Carrega a mensagem completa para garantir estrutura correta
-                const quotedMsg = await sock.loadMessage(numero, quotedId);
-                options.quoted = quotedMsg;
+                // Tenta carregar da store
+                const quotedMsg = await store.loadMessage(numero, quotedId);
+                if (quotedMsg) {
+                    options.quoted = quotedMsg;
+                } else {
+                    console.log('⚠️ Mensagem citada não encontrada na store, ignorando citação.');
+                    // Não enviar fallback com chave simples pois causa erro no Baileys se a mensagem não existir
+                }
             } catch (loadErr) {
-                console.warn('⚠️ Não foi possível carregar a mensagem citada, enviando com chave simples:', loadErr.message);
-                options.quoted = { key: { remoteJid: numero, id: quotedId, fromMe: false } };
+                console.warn('⚠️ Erro ao carregar mensagem citada:', loadErr.message);
             }
         }
 
