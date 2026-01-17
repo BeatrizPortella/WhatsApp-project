@@ -2,7 +2,7 @@ require('dotenv').config();
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const P = require('pino');
 const qrcode = require('qrcode-terminal');
-const { salvarMensagemCliente, obterOuCriarConversa } = require('./database');
+const { salvarMensagemCliente, obterOuCriarConversa, salvarMensagemAtendente } = require('./database');
 
 let sock = null;
 
@@ -110,22 +110,55 @@ async function connectToWhatsApp() {
  * @param {number} atendenteId - ID do atendente
  * @param {string} nomeAtendente - Nome do atendente
  */
-async function enviarMensagem(numero, texto, atendenteId, nomeAtendente) {
+async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedMessageId = null) {
     try {
         if (!sock) {
             throw new Error('WhatsApp não está conectado');
         }
 
-        // Formata a mensagem com o nome do atendente em negrito em linha separada
+        // Formata a mensagem com o nome do atendente em negrito
         const mensagemCompleta = `*${nomeAtendente}*\n${texto}`;
 
-        // Envia a mensagem
-        await sock.sendMessage(numero, { text: mensagemCompleta });
+        // Constrói opções de envio
+        const options = {};
+        if (quotedMessageId) {
+            // Extrai apenas o ID final caso venha no formato completo
+            let quotedId = quotedMessageId;
+            if (quotedMessageId.includes('_')) {
+                const parts = quotedMessageId.split('_');
+                quotedId = parts[parts.length - 1];
+            }
+            try {
+                // Carrega a mensagem completa para garantir estrutura correta
+                const quotedMsg = await sock.loadMessage(numero, quotedId);
+                options.quoted = quotedMsg;
+            } catch (loadErr) {
+                console.warn('⚠️ Não foi possível carregar a mensagem citada, enviando com chave simples:', loadErr.message);
+                options.quoted = { key: { remoteJid: numero, id: quotedId, fromMe: false } };
+            }
+        }
+
+
+        // Tenta enviar mensagem
+        let result;
+        try {
+            result = await sock.sendMessage(numero, { text: mensagemCompleta }, options);
+        } catch (err) {
+            // Se o erro for marcadoUnread, tenta reconectar e reenviar
+            if (err.message && (err.message.includes('markedUnread') || err.message.includes('undefined'))) {
+                console.warn('⚠️ markedUnread error, reconectando e tentando novamente...');
+                await connectToWhatsApp(); // reconecta
+                result = await sock.sendMessage(numero, { text: mensagemCompleta }, options);
+            } else {
+                throw err;
+            }
+        }
 
         console.log(`✅ Mensagem enviada por ${nomeAtendente} para ${numero}`);
-
-        return { success: true };
-
+        // Salva no BD (ID da mensagem enviada)
+        const whatsappId = result?.key?.id || null;
+        await salvarMensagemAtendente(numero, atendenteId, texto, null, null, whatsappId, null, quotedMessageId);
+        return { success: true, messageId: whatsappId };
     } catch (error) {
         console.error('❌ Erro ao enviar mensagem:', error);
         throw error;
