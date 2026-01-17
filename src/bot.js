@@ -210,8 +210,18 @@ async function enviarMensagem(numero, texto, atendenteId, nomeAtendente, quotedM
                 if (quotedMsg) {
                     options.quoted = quotedMsg;
                 } else {
-                    console.log('⚠️ Mensagem citada não encontrada na store, ignorando citação.');
-                    // Não enviar fallback com chave simples pois causa erro no Baileys se a mensagem não existir
+                    console.log('⚠️ Mensagem citada não encontrada na store. Criando objeto de citação manual (Fallback).');
+                    // Fallback manual para permitir citar mensagens antigas (que não estão na RAM)
+                    options.quoted = {
+                        key: {
+                            remoteJid: numero,
+                            fromMe: false, // Assumimos que a msg a ser respondida é do cliente
+                            id: quotedId
+                        },
+                        message: {
+                            conversation: '...' // Placeholder obrigatório para não quebrar validações
+                        }
+                    };
                 }
             } catch (loadErr) {
                 console.warn('⚠️ Erro ao carregar mensagem citada:', loadErr.message);
