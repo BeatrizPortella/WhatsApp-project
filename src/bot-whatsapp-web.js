@@ -27,9 +27,9 @@ function getConnectionStatus() {
  * Baileys já imprime o QR Code no terminal, portanto aqui retornamos null.
  * Caso queira exibir na UI, será necessário capturar o evento `qr` dentro bot.js.
  */
-function getQRCode() {
-    return null;
-}
+// getQRCode já está sendo importado de './bot' na linha 9 e exportado na linha 39.
+// Portanto, não precisamos redeclarar uma função dummy aqui.
+// Esta linha é apenas para garantir que a função dummy anterior seja removida.
 
 module.exports = {
     connectToWhatsApp,

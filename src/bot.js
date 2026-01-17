@@ -5,6 +5,11 @@ const qrcode = require('qrcode-terminal');
 const { salvarMensagemCliente, obterOuCriarConversa, salvarMensagemAtendente } = require('./database');
 
 let sock = null;
+let qrCode = null;
+
+function getQRCode() {
+    return qrCode;
+}
 
 /**
  * Conecta ao WhatsApp Web usando Baileys
@@ -35,6 +40,7 @@ async function connectToWhatsApp() {
 
             // Exibe QR Code para autenticação
             if (qr) {
+                qrCode = qr;
                 console.log('\n🔐 ESCANEIE O QR CODE ABAIXO COM SEU WHATSAPP:\n');
                 qrcode.generate(qr, { small: true });
                 console.log('\nAbra o WhatsApp > Aparelhos conectados > Conectar aparelho\n');
@@ -56,6 +62,7 @@ async function connectToWhatsApp() {
                     console.log('⚠️  Você foi desconectado. Delete a pasta "auth_info" e escaneie o QR Code novamente.\n');
                 }
             } else if (connection === 'open') {
+                qrCode = null;
                 console.log('✅ WhatsApp conectado com sucesso!');
                 console.log('📱 Aguardando mensagens...\n');
             }
@@ -197,7 +204,8 @@ module.exports = {
     connectToWhatsApp,
     enviarMensagem,
     marcarComoLida,
-    getSocket
+    getSocket,
+    getQRCode
 };
 
 // Inicia a conexão se este arquivo for executado diretamente
